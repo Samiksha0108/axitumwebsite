@@ -1,0 +1,41 @@
+{% load static %}
+{% load json_script %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Employee Timesheet</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+</head>
+<body>
+
+<h2>🗓️ Timesheet Calendar</h2>
+<div id="calendar"></div>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Save Entry</button>
+</form>
+
+<a href="{% url 'submit_timesheet' %}" class="btn btn-success mt-2">Submit All</a>
+
+{% json_script entry_dates_json "entry-dates" %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const entryDates = JSON.parse(document.getElementById('entry-dates').textContent);
+    const events = entryDates.map(date => ({ title: "Submitted", start: date }));
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      events: events
+    });
+    calendar.render();
+  });
+</script>
+
+</body>
+</html>

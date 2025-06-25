@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACME ATS - Home</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <nav class="navbar navbar-dark bg-dark px-4 py-3">
+    <a class="navbar-brand" href="#">ACME ATS</a>
+    <div class="d-flex gap-2">
+      <!-- LOGIN DROPDOWN -->
+      <div class="dropdown">
+        <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Login
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Candidate</a></li>
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#companyLoginModal">Company</a></li>
+        </ul>
+      </div>
+
+      <!-- SIGNUP DROPDOWN -->
+      <div class="dropdown">
+        <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Signup
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#signupModal">Candidate</a></li>
+          <li><a class="dropdown-item" href="{% url 'hybrid_signup' %}">Company / Employee</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section text-center text-white bg-primary">
+    <div class="container py-5">
+      <h1 class="display-4 fw-bold">Hire smarter. Get hired faster.</h1>
+      <p class="lead mt-3">End-to-end talent acquisition & internal mobility platform deployable on your own servers.</p>
+      <div class="mt-4">
+        <button class="btn btn-light btn-lg me-3">Explore Products</button>
+        <button class="btn btn-light btn-lg me-3">Get Started</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Modules -->
+  <section class="core-modules py-5 text-center">
+    <div class="container">
+      <h2 class="fw-bold mb-4">Core Modules</h2>
+      <div class="row">
+        <div class="col-md-4">
+          <h5>ATS Pipeline</h5>
+          <p>Visual Kanban for requisitions, interviews & offers.</p>
+        </div>
+        <div class="col-md-4">
+          <h5>Skill Assessments</h5>
+          <p>Coding & aptitude tests with proctoring.</p>
+        </div>
+        <div class="col-md-4">
+          <h5>Internal Job Board</h5>
+          <p>Employees discover openings & career paths.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Candidate Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Candidate Login</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="{% url 'candidate_login' %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label>Email</label>
+              <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>Password</label>
+              <input type="password" name="password" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Candidate Signup Modal -->
+  <div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Candidate Signup</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="{% url 'candidate_signup' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label>Email</label>
+              <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>Password</label>
+              <input type="password" name="password1" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>Confirm Password</label>
+              <input type="password" name="password2" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>Phone</label>
+              <input type="text" name="phone" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>Preferred Skills</label>
+              <textarea name="preferred_skills" class="form-control" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label>Resume</label>
+              <input type="file" name="resume" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Signup</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Company Login Modal -->
+  <div class="modal fade" id="companyLoginModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Company Login</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="{% url 'company_login' %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label>Email</label>
+              <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>Company Code</label>
+              <input type="text" name="code" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>Password</label>
+              <input type="password" name="password" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

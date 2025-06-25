@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submit Timesheet</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    body { background-color: #f9fafc; font-family: 'Segoe UI', sans-serif; }
+    .timesheet-form { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .calendar-cell { padding: 10px; border-radius: 8px; cursor: pointer; }
+    .calendar-cell:hover { background-color: #e8f0fe; }
+    .calendar-cell.active { background-color: #cce5ff; font-weight: bold; }
+    .entry-highlight { border: 2px solid #198754; }
+  </style>
+</head>
+<body>
+
+<div class="container mt-5">
+
+  <h2 class="mb-4">📝 Submit Timesheet</h2>
+
+  <!-- Calendar Navigation -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="?year={{ year }}&month={{ month|add:'-1' }}" class="btn btn-outline-primary">← Previous</a>
+    <h4>{{ month }}/{{ year }}</h4>
+    <a href="?year={{ year }}&month={{ month|add:'1' }}" class="btn btn-outline-primary">Next →</a>
+  </div>
+
+  <!-- Calendar Table -->
+  <table class="table table-bordered text-center mb-4">
+    <thead class="table-light"><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead>
+    <tbody>
+      {% for week in month_days %}
+      <tr>
+        {% for day in week %}
+        <td>
+          <a href="?year={{ year }}&month={{ month }}&selected={{ day.date|date:'Y-m-d' }}">
+            <div class="calendar-cell {% if day.date == selected_date %}active{% endif %} {% if day.date in entry_dates %}entry-highlight{% endif %}">
+              {{ day.date.day }}
+            </div>
+          </a>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Form -->
+  <div class="timesheet-form">
+    <form method="post">
+      {% csrf_token %}
+      <h5>Selected Date: {{ selected_date }}</h5>
+      {{ form.date }}
+      <div class="row">
+        <div class="col-md-4">
+          <label>Start Time:</label>
+          {{ form.start_time }}
+        </div>
+        <div class="col-md-4">
+          <label>End Time:</label>
+          {{ form.end_time }}
+        </div>
+        <div class="col-md-4">
+          <label>Hours Worked:</label>
+          {{ form.hours_worked }}
+        </div>
+      </div>
+      <div class="text-end mt-4">
+        <button type="submit" class="btn btn-success">Save</button>
+      </div>
+    </form>
+  </div>
+
+  {% if preview_entries %}
+  <div class="mt-5">
+    <h4>Existing Entries</h4>
+    <table class="table">
+      <thead><tr><th>Date</th><th>Start</th><th>End</th><th>Hours</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for entry in preview_entries %}
+        <tr>
+          <td>{{ entry.date }}</td>
+          <td>{{ entry.start_time }}</td>
+          <td>{{ entry.end_time }}</td>
+          <td>{{ entry.hours_worked }}</td>
+          <td>
+            {% if not entry.submitted %}
+                <span class="badge bg-warning text-dark">Saved</span>
+                {% elif entry.approved == True %}
+                <span class="badge bg-success">Approved</span>
+                {% elif entry.approved == False %}
+                <span class="badge bg-danger">Rejected</span>
+                {% else %}
+                <span class="badge bg-info">Submitted</span>
+                {% endif %}
+
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{% url 'submit_all_for_approval' %}" class="btn btn-primary mt-2">Submit All for Approval</a>
+  </div>
+  {% endif %}
+
+</div>
+</body>
+</html>

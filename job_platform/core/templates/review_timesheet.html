@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Review Timesheet</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <div class="container my-5">
+    <h2>Review Timesheet</h2>
+    <p><strong>Employee:</strong> {{ timesheet.employee.email }}</p>
+    <p><strong>Date:</strong> {{ timesheet.date }}</p>
+    <p><strong>Start:</strong> {{ timesheet.start_time }}</p>
+    <p><strong>End:</strong> {{ timesheet.end_time }}</p>
+    <p><strong>Total Hours:</strong> {{ timesheet.total_hours }}</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button name="action" value="approve" class="btn btn-success">Approve</button>
+      <button name="action" value="reject" class="btn btn-danger">Reject</button>
+    </form>
+  </div>
+</body>
+</html>

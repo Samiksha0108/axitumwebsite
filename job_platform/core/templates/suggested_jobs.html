@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Suggested Jobs</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container my-5 suggested-jobs-wrapper">
+  <h2 class="mb-4 text-center">🎯 Jobs Matched for You</h2>
+
+  {% if matches %}
+    <div class="row">
+      {% for match in matches %}
+        <div class="col-md-6 mb-4">
+          <div class="job-card">
+            <h5>{{ match.job.title }}</h5>
+            <p class="text-muted">{{ match.job.location }} | {{ match.job.employment_type|title }}</p>
+            <p>💰 {{ match.job.salary_min }} - {{ match.job.salary_max }}</p>
+            <p><strong>Experience:</strong> {{ match.job.experience_level|title }}</p>
+            <p><strong>Matched Skills:</strong> 
+              <span class="badge bg-success">
+                {{ match.matched_keywords|join:", " }}
+              </span>
+            </p>
+            <p><strong>Match Score:</strong> {{ match.score }}</p>
+            <a href="{% url 'job_detail_candidate' match.job.id %}" class="btn btn-outline-primary btn-sm mt-2">View Details</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-center text-muted">No job matches found based on your skills.</p>
+  {% endif %}
+</div>
+
+</body>
+</html>

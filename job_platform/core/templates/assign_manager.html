@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assign Manager</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="mb-4">Assign Managers to Employees</h2>
+
+    <table class="table table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>Employee</th>
+          <th>Current Manager</th>
+          <th>Assign Manager</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for employee in employees %}
+        <tr>
+          <td>{{ employee.email }} ({{ employee.role }})</td>
+          <td>
+            {% if employee.manager %}
+              {{ employee.manager.email }}
+            {% else %}
+              <span class="text-muted">None</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="employee_id" value="{{ employee.id }}">
+              <select name="manager_id" class="form-select">
+                <option value="">-- Select Manager --</option>
+                {% for manager in managers %}
+                  <option value="{{ manager.id }}" {% if employee.manager and employee.manager.id == manager.id %}selected{% endif %}>
+                    {{ manager.email }}
+                  </option>
+                {% endfor %}
+              </select>
+          </td>
+          <td>
+              <button type="submit" class="btn btn-primary btn-sm">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

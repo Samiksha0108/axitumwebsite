@@ -1,0 +1,345 @@
+/* static/css/style.css */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  background-color: #1e1e1e !important;
+}
+
+.navbar .btn {
+  font-weight: 500;
+  border-radius: 5px;
+}
+
+.hero-section {
+  background: linear-gradient(135deg, #5b2eff, #6e72fc);
+  color: white;
+  padding: 80px 0;
+}
+
+.hero-section h1 {
+  font-size: 2.8rem;
+}
+
+.hero-section p {
+  font-size: 1.25rem;
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.core-modules {
+  background-color: #ffffff;
+}
+
+.core-modules h2 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #212529;
+}
+
+.core-modules h5 {
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+.core-modules p {
+  color: #6c757d;
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}
+
+.modal-content {
+  border-radius: 10px;
+}
+
+.btn-primary {
+  background-color: #6c63ff;
+  border-color: #6c63ff;
+}
+
+.btn-primary:hover {
+  background-color: #594de4;
+  border-color: #594de4;
+}
+
+.btn-outline-light {
+  border-color: white;
+  color: white;
+}
+
+.btn-outline-light:hover {
+  background-color: white;
+  color: #212529;
+}
+
+.btn-warning {
+  font-weight: 600;
+}
+
+/* static/css/style.css */
+
+/* === Candidate Dashboard Styles === */
+
+.sidebar {
+  height: 100vh;
+  background-color: #343a40;
+  padding-top: 20px;
+  position: fixed;
+  width: 250px;
+  top: 0;
+  left: 0;
+}
+
+.sidebar a {
+  color: white;
+  padding: 15px;
+  display: block;
+  text-decoration: none;
+}
+
+.sidebar a:hover {
+  background-color: #495057;
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 20px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.job-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.job-card:hover {
+  transform: translateY(-4px);
+}
+
+.job-card .job-description {
+  color: #6c757d;
+  font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 3.5em;
+}
+
+.dropdown-menu .dropdown-item {
+      padding: 8px 10px;
+      font-size: 16px;
+    }
+/* Company Dashboard Styles */
+.dashboard {
+  background-color: #f5f6fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.dashboard .sidebar {
+  height: 100vh;
+  background-color: #343a40;
+  padding-top: 20px;
+  position: fixed;
+  width: 250px;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.dashboard .sidebar a {
+  color: white;
+  padding: 15px;
+  display: block;
+  text-decoration: none;
+}
+
+.dashboard .sidebar a:hover {
+  background-color: #495057;
+}
+
+.dashboard .main-content {
+  margin-left: 250px;
+  padding: 20px;
+}
+
+.dashboard .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard .job-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.dashboard .job-card h5 {
+  margin-bottom: 10px;
+}
+
+.dashboard .job-card .keywords {
+  word-wrap: break-word;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.dashboard .job-card .job-description {
+  color: #6c757d;
+  font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 3.5em;
+}
+/* style.css */
+
+.job-posting-form {
+  max-width: 700px;
+  background: #ffffff;
+  margin: 40px auto;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.job-posting-form h2 {
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+.job-posting-form label {
+  font-weight: 500;
+  margin-top: 15px;
+}
+
+.job-posting-form input,
+.job-posting-form textarea,
+.job-posting-form select {
+  margin-top: 5px;
+}
+
+.job-posting-form .btn-preview {
+  margin: 20px 0;
+}
+
+.job-posting-form .section-title {
+  margin-top: 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.suggested-jobs-wrapper {
+  background: #f9fafd;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.suggested-jobs-wrapper h2 {
+  font-weight: 700;
+  color: #333;
+}
+
+.job-card {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.job-card:hover {
+  transform: translateY(-5px);
+}
+
+.job-card h5 {
+  color: #2d2d2d;
+  font-weight: 600;
+}
+
+.job-card p {
+  font-size: 0.95rem;
+}
+
+.job-card .badge {
+  font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+.job-applications-page {
+  background-color: #f9fafc;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.job-applications-page h2 {
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+/* Employee Table Page */
+.table {
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.table thead th {
+  background-color: #343a40;
+  color: white;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+.sidebar a.active {
+  background-color: #495057 !important;
+  font-weight: bold;
+}
+/* .container.form-container  {
+  max-width: 600px;
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+} */

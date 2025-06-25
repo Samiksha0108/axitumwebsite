@@ -1,0 +1,65 @@
+{% load static %}
+{% load json_script %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Manager Timesheet Approval</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+</head>
+<body>
+
+<h2>🧑‍💼 Timesheet Approval</h2>
+<div id="calendar"></div>
+
+<table class="table mt-3">
+  <thead>
+    <tr>
+      <th>Employee</th><th>Date</th><th>Earn Code</th><th>Start</th><th>End</th><th>Hours</th><th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for t in timesheets %}
+    <tr>
+      <td>{{ t.employee.email }}</td>
+      <td>{{ t.date }}</td>
+      <td>{{ t.earn_code }}</td>
+      <td>{{ t.start_time }}</td>
+      <td>{{ t.end_time }}</td>
+      <td>{{ t.hours_worked }}</td>
+      <td>
+        {% if t.approved == None %}
+          <a href="{% url 'approve_timesheet' t.id %}" class="btn btn-success btn-sm">Approve</a>
+          <a href="{% url 'reject_timesheet' t.id %}" class="btn btn-danger btn-sm">Reject</a>
+        {% elif t.approved %}
+          ✅ Approved
+        {% else %}
+          ❌ Rejected
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7">No submitted timesheets for this date.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% json_script entry_dates_json "entry-dates" %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const entryDates = JSON.parse(document.getElementById('entry-dates').textContent);
+    const events = entryDates.map(date => ({ title: "Pending", start: date }));
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      events: events
+    });
+    calendar.render();
+  });
+</script>
+
+</body>
+</html>
