@@ -238,37 +238,79 @@ def company_signup(request):
 
 
 # Employee Signup View
+# def employee_signup(request):
+#     if request.method == 'POST':
+#         form = EmployeeSignupForm(request.POST)
+#         if form.is_valid():
+#             code = form.cleaned_data['company_code']
+#             try:
+#                 company = Company.objects.get(code=code)
+#             except Company.DoesNotExist:
+#                 form.add_error('company_code', 'Invalid company code')
+#                 return render(request, 'employee_signup.html', {'form': form})
+
+#             user = CompanyUser(
+#                 company=company,
+#                 email=form.cleaned_data['email'],
+#                 role='employee',  # default role at signup
+#                 password=make_password(form.cleaned_data['password1'])
+#             )
+#             user.save()
+
+#             request.session['company_user_id'] = user.id
+#             request.session['company_id'] = company.id
+#             request.session['role'] = 'employee'
+#             return redirect('employee_dashboard')
+
+#     else:
+#         form = EmployeeSignupForm()
+#     return render(request, 'employee_signup.html', {'form': form})
+
+
+# Company Login
+from django.contrib.auth.hashers import make_password
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Company, CompanyUser
+from .forms import EmployeeSignupForm
+
 def employee_signup(request):
     if request.method == 'POST':
         form = EmployeeSignupForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data['company_code']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password1']
+
             try:
                 company = Company.objects.get(code=code)
             except Company.DoesNotExist:
                 form.add_error('company_code', 'Invalid company code')
                 return render(request, 'employee_signup.html', {'form': form})
 
-            user = CompanyUser(
-                company=company,
-                email=form.cleaned_data['email'],
-                role='employee',  # default role at signup
-                password=make_password(form.cleaned_data['password1'])
-            )
+            try:
+                user = CompanyUser.objects.get(email=email, company=company)
+            except CompanyUser.DoesNotExist:
+                form.add_error('email', 'You have not been added by your company yet.')
+                return render(request, 'employee_signup.html', {'form': form})
+
+            # If already registered (i.e., password is set), you may show error too
+            if user.password:
+                form.add_error('email', 'This account has already been registered.')
+                return render(request, 'employee_signup.html', {'form': form})
+
+            user.password = make_password(password)
             user.save()
 
+            # login
             request.session['company_user_id'] = user.id
             request.session['company_id'] = company.id
-            request.session['role'] = 'employee'
-            return redirect('employee_dashboard')
+            request.session['role'] = user.role
 
+            return redirect('employee_dashboard')
     else:
         form = EmployeeSignupForm()
+
     return render(request, 'employee_signup.html', {'form': form})
-
-
-# Company Login
-
 
 
 def company_login(request):
@@ -367,34 +409,35 @@ def company_dashboard_view(request):
 
 
 def add_employee(request):
+    role = request.session.get('role')  # ✅ Extract the role from session
+    company_id = request.session.get('company_id')
+    company = Company.objects.get(id=company_id)
+
     if request.method == 'POST':
         form = AddEmployeeForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            role = form.cleaned_data['role']
+            emp_role = form.cleaned_data['role']  # avoid shadowing `role`
 
-            company_id = request.session.get('company_id')
-            company = Company.objects.get(id=company_id)
-
-            # ✅ Check if this email already exists under company
+            # ✅ Check if user already exists in this company
             existing_user = CompanyUser.objects.filter(company=company, email=email).first()
             if existing_user:
                 messages.warning(request, f"{email} already exists in your company.")
                 return redirect('add_employee')
 
-            # ✅ Create placeholder user with empty password
+            # ✅ Create new user
             CompanyUser.objects.create(
                 company=company,
                 email=email,
-                role=role,
-                password=''  # Empty password (will be set during signup)
+                role=emp_role,
+                password=''  # placeholder; to be set by user
             )
 
-            # ✅ Send invitation email
+            # ✅ Send invite email
             send_mail(
                 subject='You’ve been invited to join ACME ATS',
                 message=(
-                    f"Hello,\n\nYou have been invited to join {company.name} as {role}.\n\n"
+                    f"Hello,\n\nYou have been invited to join {company.name} as {emp_role}.\n\n"
                     f"To complete your signup, go to: https://your-domain.com/signup/\n"
                     f"Your Company Code: {company.code}\n\n"
                     f"Please signup with your same email address."
@@ -408,27 +451,87 @@ def add_employee(request):
             return redirect('company_dashboard')
     else:
         form = AddEmployeeForm()
-    return render(request, 'add_employee.html', {'form': form})
+
+    return render(request, 'add_employee.html', {
+        'form': form,
+        'role': role,  # ✅ So sidebar shows correct links
+        'company': company  # optional, in case template references it
+    })
 
 
 
 
+# def post_job(request):
+#     company_id = request.session.get('company_id')
+#     user_id = request.session.get('company_user_id')
+#     role = request.session.get('role')
 
+#     # 🚫 Not logged in
+#     if not company_id or not user_id:
+#         return redirect('company_login')
+
+#     # ❌ Not admin or HR
+#     if role not in ['admin', 'hr']:
+#         return HttpResponseForbidden("Only Admins or HRs can post jobs.")
+
+#     # ✅ Get company and user
+#     try:
+#         company = Company.objects.get(id=company_id)
+#         user = CompanyUser.objects.get(id=user_id, company=company)
+#     except (Company.DoesNotExist, CompanyUser.DoesNotExist):
+#         return redirect('company_login')
+
+#     description = None
+#     keywords_choices = []
+
+#     if request.method == 'POST':
+#         description = request.POST.get('description')
+#         if description:
+#             keywords_choices = extract_keywords(description)
+
+#         form = JobRoleForm(request.POST)
+#         form.fields['selected_keywords'].choices = [(kw, kw) for kw in sorted(keywords_choices)]
+
+#         if 'preview_keywords' in request.POST:
+#             return render(request, 'post_job.html', {'form': form})
+
+#         elif form.is_valid():
+#             job = form.save(commit=False)
+#             job.company = company
+
+#             # Keywords
+#             selected_keywords = form.cleaned_data.get('selected_keywords', [])
+#             if isinstance(selected_keywords, str):
+#                 selected_keywords = [selected_keywords]
+
+#             manual_keywords = form.cleaned_data.get('manual_keywords', '')
+#             manual_list = [kw.strip() for kw in manual_keywords.split(',') if kw.strip()]
+#             job.keywords = ",".join(selected_keywords + manual_list)
+
+#             job.save()
+#             return redirect('company_dashboard')
+
+#     else:
+#         form = JobRoleForm()
+
+#     return render(request, 'post_job.html', {'form': form})
+
+from .models import JobRole, Company, CompanyUser
+from .forms import JobRoleForm
 
 def post_job(request):
     company_id = request.session.get('company_id')
     user_id = request.session.get('company_user_id')
-    role = request.session.get('role')
+    role = request.session.get('role')  # ✅ Ensures sidebar renders correctly
 
     # 🚫 Not logged in
     if not company_id or not user_id:
         return redirect('company_login')
 
-    # ❌ Not admin or HR
+    # ❌ Not authorized
     if role not in ['admin', 'hr']:
         return HttpResponseForbidden("Only Admins or HRs can post jobs.")
 
-    # ✅ Get company and user
     try:
         company = Company.objects.get(id=company_id)
         user = CompanyUser.objects.get(id=user_id, company=company)
@@ -447,13 +550,17 @@ def post_job(request):
         form.fields['selected_keywords'].choices = [(kw, kw) for kw in sorted(keywords_choices)]
 
         if 'preview_keywords' in request.POST:
-            return render(request, 'post_job.html', {'form': form})
+            return render(request, 'post_job.html', {
+                'form': form,
+                'role': role,           # ✅ Add role
+                'company': company      # ✅ Optional if template uses it
+            })
 
         elif form.is_valid():
             job = form.save(commit=False)
             job.company = company
+            job.posted_by = user
 
-            # Keywords
             selected_keywords = form.cleaned_data.get('selected_keywords', [])
             if isinstance(selected_keywords, str):
                 selected_keywords = [selected_keywords]
@@ -468,9 +575,92 @@ def post_job(request):
     else:
         form = JobRoleForm()
 
-    return render(request, 'post_job.html', {'form': form})
+    return render(request, 'post_job.html', {
+        'form': form,
+        'role': role,               # ✅ This is the fix
+        'company': company          # Optional but useful
+    })
 
+import os
+from django.core.mail import EmailMessage
+from django.conf import settings
+from .models import ResumeSubmission
 
+def send_resumes_view(request, job_id):
+    print("hi")
+    company_user_id = request.session.get('company_user_id')
+    role = request.session.get('role')
+
+    if role != 'hr' or not company_user_id:
+        return redirect('company_dashboard')
+
+    job = get_object_or_404(JobRole, id=job_id)
+    hr_user = CompanyUser.objects.get(id=company_user_id)
+
+    if not job.posted_by:
+        messages.error(request, "This job does not have a valid poster to send resumes to.")
+        return redirect('hr_job_board')
+    print("hi11")
+    if request.method == 'POST':
+        print("hi111")
+        selected_employee_ids = request.POST.getlist('selected_employees')
+        print("Selected employees:", selected_employee_ids)  # ✅ DEBUG
+
+        if not selected_employee_ids:
+            messages.warning(request, "No employees selected.")
+            return redirect('send_resumes', job_id=job.id)
+
+        employees = CompanyUser.objects.filter(
+            id__in=selected_employee_ids,
+            company=hr_user.company,
+            role='employee',
+            resume__isnull=False
+        )
+
+        email = EmailMessage(
+            subject=f"Resumes for: {job.title}",
+            body=f"{hr_user.email} from {hr_user.company.name} submitted resumes for your job post: {job.title}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[job.posted_by.email]
+        )
+        print("hi2")
+
+        for emp in employees:
+            if emp.resume:
+                email.attach_file(emp.resume.path)
+
+                # 🟢 SAVE submission
+                print(f"📌 Saving submission for: {emp.email}")
+                ResumeSubmission.objects.create(
+                    job=job,
+                    submitted_by=hr_user,
+                    employee=emp
+                )
+        # try:
+        #     ResumeSubmission.objects.create(
+        #         job=job,
+        #         submitted_by=hr_user,
+        #         employee=emp
+        #     )
+        #     print(f"✅ Saved: {emp.email}")
+        # except Exception as e:
+        #     print(f"❌ Failed to save for {emp.email}: {e}")
+
+        email.send()
+        messages.success(request, "Resumes sent and submissions saved!")
+        return redirect('hr_job_board')
+
+    # GET
+    employees = CompanyUser.objects.filter(
+        company=hr_user.company,
+        role='employee',
+        resume__isnull=False
+    )
+
+    return render(request, 'send_resumes.html', {
+        'job': job,
+        'employees': employees
+    })
 
 
 def job_detail_company(request, job_id):
@@ -932,7 +1122,7 @@ def hybrid_signup(request):
                 try:
                     company = Company.objects.get(code=company_code)
                 except Company.DoesNotExist:
-                    messages.error(request, "Invalid Company Code")
+                    form.add_error('company_code', 'Invalid Company Code')
                     return render(request, 'company_signup.html', {'form': form})
 
                 # Company exists — now check if pre-created employee record exists
@@ -940,7 +1130,7 @@ def hybrid_signup(request):
                     existing_user = CompanyUser.objects.get(company=company, email=email)
 
                     if existing_user.password:
-                        messages.error(request, "This user is already registered.")
+                        form.add_error('email', 'This user is already registered.')
                         return render(request, 'company_signup.html', {'form': form})
 
                     # Complete signup — fill missing password now
@@ -953,7 +1143,7 @@ def hybrid_signup(request):
                     return redirect('company_dashboard')
 
                 except CompanyUser.DoesNotExist:
-                    messages.error(request, "You are not pre-approved. Contact your admin.")
+                    form.add_error('email', 'You are not pre-approved. Contact your admin.')
                     return render(request, 'company_signup.html', {'form': form})
 
             else:
@@ -987,7 +1177,6 @@ def hybrid_signup(request):
                 request.session['company_id'] = company.id
                 request.session['role'] = admin_user.role
                 return redirect('company_dashboard')
-
     else:
         form = HybridSignupForm()
 
@@ -1050,42 +1239,206 @@ def hr_job_detail(request, job_id):
         'job': job
     })
 
-def send_resumes_view(request, job_id):
+# def send_resumes_view(request, job_id):
+#     company_user_id = request.session.get('company_user_id')
+#     role = request.session.get('role')
+
+#     if role != 'hr' or not company_user_id:
+#         return redirect('company_dashboard')
+
+#     job = get_object_or_404(JobRole, id=job_id)
+#     hr_user = CompanyUser.objects.get(id=company_user_id)
+
+#     if request.method == 'POST':
+#         selected_employee_ids = request.POST.getlist('selected_employees')
+
+#         employees = CompanyUser.objects.filter(
+#             id__in=selected_employee_ids,
+#             company=hr_user.company,
+#             role='employee',
+#             resume__isnull=False
+#         )
+
+#         # ⚠ Simulate sending email with resumes
+#         for emp in employees:
+#             print(f"Simulating email attachment for: {emp.email} - Resume: {emp.resume.url}")
+
+#         # You can implement real email logic here if needed
+#         messages.success(request, "Resumes have been successfully submitted!")
+#         return redirect('hr_job_board')
+
+#     # Show employee selection form
+#     employees = CompanyUser.objects.filter(
+#         company=hr_user.company,
+#         role='employee',
+#         resume__isnull=False
+#     )
+
+#     return render(request, 'send_resumes.html', {
+#         'job': job,
+#         'employees': employees
+#     })
+
+
+
+from django.shortcuts import render
+from .models import ResumeSubmission, CompanyUser
+
+def view_submitted_resumes(request):
     company_user_id = request.session.get('company_user_id')
     role = request.session.get('role')
 
-    if role != 'hr' or not company_user_id:
+    if not company_user_id or role not in ['admin', 'hr']:
         return redirect('company_dashboard')
 
-    job = get_object_or_404(JobRole, id=job_id)
-    hr_user = CompanyUser.objects.get(id=company_user_id)
+    current_user = CompanyUser.objects.get(id=company_user_id)
+    submissions = ResumeSubmission.objects.filter(job__posted_by=current_user).select_related('job', 'employee', 'submitted_by')
+
+    return render(request, 'submitted_resumes.html', {
+        'submissions': submissions
+    })
+
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import ResumeSubmission
+
+def reject_submission(request, submission_id):
+    if request.method == 'POST':
+        if 'company_id' not in request.session:
+            return redirect('company_login')
+
+        submission = get_object_or_404(ResumeSubmission, id=submission_id)
+
+        # Correct comparison using company
+        if submission.job.posted_by.company.id != request.session['company_id']:
+            return redirect('view_submitted_resumes')
+
+        submission.delete()
+
+    return redirect('view_submitted_resumes')
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .forms import CandidateProfileForm
+
+@login_required
+def edit_candidate_profile(request):
+    user = request.user
 
     if request.method == 'POST':
-        selected_employee_ids = request.POST.getlist('selected_employees')
+        form = CandidateProfileForm(request.POST, request.FILES, instance=user)  # ✅ Include request.FILES
+        if form.is_valid():
+            form.save()
+            return redirect('candidate_dashboard')
+    else:
+        form = CandidateProfileForm(instance=user)
 
-        employees = CompanyUser.objects.filter(
-            id__in=selected_employee_ids,
-            company=hr_user.company,
-            role='employee',
-            resume__isnull=False
-        )
+    return render(request, 'edit_candidate_profile.html', {'form': form})
 
-        # ⚠ Simulate sending email with resumes
-        for emp in employees:
-            print(f"Simulating email attachment for: {emp.email} - Resume: {emp.resume.url}")
 
-        # You can implement real email logic here if needed
-        messages.success(request, "Resumes have been successfully submitted!")
-        return redirect('hr_job_board')
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
-    # Show employee selection form
-    employees = CompanyUser.objects.filter(
-        company=hr_user.company,
-        role='employee',
-        resume__isnull=False
-    )
+@login_required
+def view_candidate_profile(request):
+    candidate = request.user  # Assumes user is a Candidate
+    return render(request, 'view_candidate_profile.html', {'candidate': candidate})
 
-    return render(request, 'send_resumes.html', {
-        'job': job,
-        'employees': employees
-    })
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.shortcuts import redirect
+from .forms import ContactForm
+
+def contact_support_candidate(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
+
+            full_message = f"Support request from {name} ({email}):\n\n{message}"
+
+            send_mail(
+                subject="Candidate Support Request",
+                message=full_message,
+                from_email=email,
+                recipient_list=['ss5047@rit.edu'],  # Change to your support email
+            )
+
+            messages.success(request, "Your message has been sent to our support team!")
+        else:
+            messages.error(request, "Please fill out all required fields.")
+    return redirect('candidate_dashboard')
+
+
+from .models import Application
+
+@login_required
+def jobs_applied_view(request):
+    candidate = request.user
+    applications = Application.objects.filter(candidate=candidate, status='applied').select_related('job', 'job__company').order_by('-created_at')
+    return render(request, 'jobs_applied.html', {'applications': applications})
+
+
+from .forms import CompanyUserProfileForm
+from .models import CompanyUser
+
+def edit_company_user_profile(request):
+    user_id = request.session.get('company_user_id')
+    if not user_id:
+        return redirect('company_login')
+
+    user = CompanyUser.objects.get(id=user_id)
+
+    if request.method == 'POST':
+        form = CompanyUserProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect('company_dashboard')
+    else:
+        form = CompanyUserProfileForm(instance=user)
+
+    return render(request, 'edit_company_profile.html', {'form': form})
+
+
+def view_company_user_profile(request):
+    user_id = request.session.get('company_user_id')
+    if not user_id:
+        return redirect('company_login')
+
+    user = CompanyUser.objects.get(id=user_id)
+    return render(request, 'view_company_profile.html', {'user': user})
+
+
+from .forms import CompanySupportForm
+from django.core.mail import send_mail
+from django.contrib import messages
+
+def contact_support_company(request):
+    user_id = request.session.get('company_user_id')
+    if not user_id:
+        return redirect('company_login')
+
+    if request.method == "POST":
+        form = CompanySupportForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
+
+            full_message = f"Company Support Request from {name} ({email}):\n\n{message}"
+
+            send_mail(
+                subject="Company Support Request",
+                message=full_message,
+                from_email=email,
+                recipient_list=['samikshareddy789@gmail.com'],  # Replace with your support email
+            )
+
+            messages.success(request, "Your message has been sent to our support team!")
+        else:
+            messages.error(request, "Please complete all required fields.")
+    
+    return redirect('company_dashboard')

@@ -1,0 +1,113 @@
+{% extends 'base_candidate.html' %}
+{% load static %}
+
+{% block title %}Candidate Profile{% endblock %}
+
+{% block content %}
+<style>
+  .profile-container {
+    max-width: 700px;
+    margin: 60px auto;
+    background-color: #ffffff;
+    padding: 40px 50px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  .profile-container h4 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .profile-item {
+    margin-bottom: 20px;
+  }
+
+  .profile-item label {
+    font-weight: 600;
+    display: inline-block;
+    width: 180px;
+    color: #6c757d;
+  }
+
+  .profile-item span,
+  .profile-item a {
+    color: #212529;
+    font-size: 1rem;
+  }
+
+  .profile-item a.btn-outline-primary {
+    font-size: 0.85rem;
+    padding: 5px 12px;
+  }
+
+  .back-button {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+  }
+</style>
+
+<div class="profile-container">
+  <h4>👤 Candidate Profile</h4>
+
+  <div class="profile-item">
+    <label>First Name:</label>
+    <span>{{ candidate.first_name|default:"Not provided" }}</span>
+  </div>
+
+  <div class="profile-item">
+    <label>Last Name:</label>
+    <span>{{ candidate.last_name|default:"Not provided" }}</span>
+  </div>
+
+  <div class="profile-item">
+    <label>Email:</label>
+    <span>{{ candidate.email|default:"Not provided" }}</span>
+  </div>
+
+  <div class="profile-item">
+    <label>Phone:</label>
+    <span>{{ candidate.phone|default:"Not provided" }}</span>
+  </div>
+
+  <div class="profile-item">
+    <label>Preferred Skills:</label>
+    <span>{{ candidate.preferred_skills|default:"Not provided" }}</span>
+  </div>
+
+  <div class="profile-item">
+    <label>Address:</label>
+    <span>{{ candidate.address|default:"Not provided" }}</span>
+  </div>
+
+  <div class="profile-item">
+    <label>Preferred Location:</label>
+    <span>{{ candidate.preferred_location|default:"Not provided" }}</span>
+  </div>
+
+  <div class="profile-item">
+    <label>LinkedIn:</label>
+    {% if candidate.linkedin %}
+      <a href="{{ candidate.linkedin }}" target="_blank">{{ candidate.linkedin }}</a>
+    {% else %}
+      <span class="text-muted">Not provided</span>
+    {% endif %}
+  </div>
+
+  <div class="profile-item">
+    <label>Resume:</label>
+    {% if candidate.resume %}
+      <a href="{{ candidate.resume.url }}" target="_blank" class="btn btn-outline-primary btn-sm">📄 View Resume</a>
+    {% else %}
+      <span class="text-muted">Not provided</span>
+    {% endif %}
+  </div>
+
+  <div class="back-button">
+    <a href="{% url 'candidate_dashboard' %}" class="btn btn-secondary">⬅ Back to Dashboard</a>
+  </div>
+</div>
+{% endblock %}

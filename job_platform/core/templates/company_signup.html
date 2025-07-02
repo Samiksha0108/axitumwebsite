@@ -22,8 +22,9 @@
 
       <form method="POST">
         {% csrf_token %}
+
         {% if form.non_field_errors %}
-          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
         {% endif %}
 
         <div class="form-check form-switch mb-4">
@@ -36,11 +37,17 @@
           <div class="mb-3">
             <label>Company Name</label>
             <input type="text" name="name" class="form-control" value="{{ form.name.value|default:'' }}">
+            {% if form.name.errors %}
+              <div class="text-danger small">{{ form.name.errors.0 }}</div>
+            {% endif %}
           </div>
 
           <div class="mb-3">
             <label>Address</label>
             <textarea name="address" class="form-control">{{ form.address.value|default:'' }}</textarea>
+            {% if form.address.errors %}
+              <div class="text-danger small">{{ form.address.errors.0 }}</div>
+            {% endif %}
           </div>
         </div>
 
@@ -49,22 +56,34 @@
           <div class="mb-3">
             <label>Company Code</label>
             <input type="text" name="company_code" class="form-control" value="{{ form.company_code.value|default:'' }}">
+            {% if form.company_code.errors %}
+              <div class="text-danger small">{{ form.company_code.errors.0 }}</div>
+            {% endif %}
           </div>
         </div>
 
         <div class="mb-3">
           <label>Email</label>
           <input type="email" name="email" class="form-control" value="{{ form.email.value|default:'' }}" required>
+          {% if form.email.errors %}
+            <div class="text-danger small">{{ form.email.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="mb-3">
           <label>Password</label>
           <input type="password" name="password1" class="form-control" required>
+          {% if form.password1.errors %}
+            <div class="text-danger small">{{ form.password1.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="mb-3">
           <label>Confirm Password</label>
           <input type="password" name="password2" class="form-control" required>
+          {% if form.password2.errors %}
+            <div class="text-danger small">{{ form.password2.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Register</button>
@@ -125,15 +144,11 @@
   window.onload = toggleEmployeeFields;
 
   function showPayment(method) {
-    // Hide all payment forms first
-    document.getElementById("form-card").style.display = 'none';
-    document.getElementById("form-apple").style.display = 'none';
-    document.getElementById("form-google").style.display = 'none';
-    document.getElementById("form-amazon").style.display = 'none';
-
-    // Show selected payment form
+    const methods = ['card', 'apple', 'google', 'amazon'];
+    methods.forEach(m => {
+      document.getElementById("form-" + m).style.display = 'none';
+    });
     document.getElementById("form-" + method).style.display = 'block';
   }
 </script>
-
 {% endblock %}

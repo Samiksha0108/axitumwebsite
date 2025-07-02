@@ -13,14 +13,22 @@ from django.contrib.auth.models import AbstractUser
 #     phone = models.CharField(max_length=15, blank=True)
 #     preferred_skills = models.TextField(null=True, blank=True)  # Comma-separated skills
 #     # Add any other candidate-specific fields
+
+
 class Candidate(AbstractUser):
     resume = models.FileField(upload_to='resumes/', null=True, blank=True)
-    preferred_skills = models.TextField(null=True,blank=True)
+    preferred_skills = models.TextField(null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True)
+
+    # ✅ New fields
+    address = models.TextField(null=True, blank=True)
+    linkedin = models.URLField(null=True, blank=True)
+    preferred_location = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         verbose_name = "Candidate"
         verbose_name_plural = "Candidates"
+
 
 # -----------------------------
 # Company Model
@@ -121,8 +129,14 @@ class CompanyUser(models.Model):
     ])
     password = models.CharField(max_length=255)
     manager = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
-    resume = models.FileField(upload_to='resumes/', null=True, blank=True)  # ✅ New field added
+    resume = models.FileField(upload_to='resumes/', null=True, blank=True)
 
+    # ✅ New fields for profile
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    linkedin = models.URLField(blank=True, null=True)
+    ssn = models.CharField(max_length=20, blank=True, null=True)
+    govt_id = models.CharField("Government ID Number", max_length=50, blank=True, null=True)
 
     def set_password(self, raw_password):
         from django.contrib.auth.hashers import make_password
@@ -131,6 +145,10 @@ class CompanyUser(models.Model):
     def check_password(self, raw_password):
         from django.contrib.auth.hashers import check_password
         return check_password(raw_password, self.password)
+
+    def __str__(self):
+        return f"{self.email} ({self.role})"
+
 
 
 class JobRole(models.Model):
@@ -155,12 +173,24 @@ class JobRole(models.Model):
         ('closed', 'Closed')
     ], default='open')
     keywords = models.TextField(blank=True)
+    posted_by = models.ForeignKey('CompanyUser', null=True, blank=True, on_delete=models.SET_NULL)
+
 
 
     def get_keyword_list(self):
         return self.keywords.split(",") if self.keywords else []
 
 
+
+
+class ResumeSubmission(models.Model):
+    job = models.ForeignKey(JobRole, on_delete=models.CASCADE)
+    submitted_by = models.ForeignKey(CompanyUser, on_delete=models.CASCADE, related_name='resume_sender')
+    employee = models.ForeignKey(CompanyUser, on_delete=models.CASCADE, related_name='resume_subject')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.submitted_by.email} ➜ {self.employee.email} for {self.job.title}"
 
 # -----------------------------
 # Application Model

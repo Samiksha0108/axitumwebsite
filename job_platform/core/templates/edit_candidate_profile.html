@@ -1,0 +1,89 @@
+{% extends 'base_candidate.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Edit Candidate Profile{% endblock %}
+
+{% block content %}
+<style>
+  .edit-profile-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .edit-profile-container h4 {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #2c3e50;
+  }
+
+  .form-label {
+    font-weight: 500;
+    color: #495057;
+  }
+
+  .form-control {
+    border-radius: 8px;
+  }
+
+  .btn-outline-primary {
+    padding: 4px 12px;
+    font-size: 0.875rem;
+  }
+
+  .resume-preview {
+    margin-top: 10px;
+  }
+</style>
+
+<div class="edit-profile-container">
+  <h4>✏️ Edit Your Profile</h4>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% for field in form %}
+      {% if field.name != 'resume' %}
+        <div class="mb-3">
+          <label class="form-label">{{ field.label }}</label>
+          {% render_field field class="form-control" %}
+          {% if field.errors %}
+            <div class="text-danger small">{{ field.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <!-- ✅ Current Resume -->
+    <div class="mb-3">
+      <label class="form-label">Current Resume:</label>
+      {% if request.user.resume %}
+        <div class="resume-preview">
+          <a href="{{ request.user.resume.url }}" target="_blank" class="btn btn-sm btn-outline-primary">📄 View Current Resume</a>
+        </div>
+      {% else %}
+        <p class="text-muted">No resume uploaded</p>
+      {% endif %}
+    </div>
+
+    <!-- ✅ Upload New Resume -->
+    <div class="mb-3">
+      <label class="form-label">Upload New Resume (PDF, DOCX):</label>
+      {% render_field form.resume class="form-control" accept=".pdf,.doc,.docx" %}
+      {% if form.resume.errors %}
+        <div class="text-danger small">{{ form.resume.errors|striptags }}</div>
+      {% endif %}
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <a href="{% url 'candidate_dashboard' %}" class="btn btn-secondary">⬅ Back</a>
+      <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

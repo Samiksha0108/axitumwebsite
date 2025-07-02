@@ -173,6 +173,8 @@ class AssignManagerForm(forms.ModelForm):
 from django import forms
 from .models import Timesheet
 
+from datetime import datetime
+
 class TimesheetForm(forms.ModelForm):
     class Meta:
         model = Timesheet
@@ -181,7 +183,21 @@ class TimesheetForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date'}),
             'start_time': forms.TimeInput(attrs={'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'type': 'time'}),
+            'hours_worked': forms.NumberInput(attrs={'readonly': 'readonly'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get('start_time')
+        end = cleaned_data.get('end_time')
+
+        if start and end:
+            if end <= start:
+                raise forms.ValidationError("End time must be after start time.")
+            delta = datetime.combine(datetime.today(), end) - datetime.combine(datetime.today(), start)
+            cleaned_data['hours_worked'] = round(delta.total_seconds() / 3600, 2)
+
+        return cleaned_data
 
 
 from django import forms
@@ -218,3 +234,65 @@ class HybridSignupForm(forms.Form):
                 raise forms.ValidationError("Company Name and Address are required")
 
         return cleaned_data
+
+
+from django import forms
+from .models import Candidate
+
+from django.core.exceptions import ValidationError
+
+class CandidateProfileForm(forms.ModelForm):
+    class Meta:
+        model = Candidate
+        fields = [
+            'first_name', 'last_name', 'email',
+            'phone', 'preferred_skills',
+            'address', 'linkedin', 'preferred_location',
+            'resume',
+        ]
+        widgets = {
+            'preferred_skills': forms.Textarea(attrs={'rows': 3}),
+            'address': forms.Textarea(attrs={'rows': 2}),
+        }
+
+    def clean_resume(self):
+        resume = self.cleaned_data.get('resume')
+
+        # Skip validation if resume wasn't re-uploaded
+        if resume and hasattr(resume, 'content_type'):
+            valid_mime_types = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+            if resume.content_type not in valid_mime_types:
+                raise forms.ValidationError('Unsupported file type. Only PDF, DOC, and DOCX are allowed.')
+
+        return resume
+
+
+
+from django import forms
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100, label='Your Name')
+    email = forms.EmailField(label='Your Email')
+    message = forms.CharField(widget=forms.Textarea(attrs={'rows': 5}), label='Describe Your Issue')
+
+from django import forms
+from .models import CompanyUser
+
+class CompanyUserProfileForm(forms.ModelForm):
+    class Meta:
+        model = CompanyUser
+        fields = [
+            'phone', 'address', 'linkedin',
+            'ssn', 'govt_id', 'resume'
+        ]
+        widgets = {
+            'address': forms.Textarea(attrs={'rows': 2}),
+        }
+
+
+from django import forms
+
+class CompanySupportForm(forms.Form):
+    name = forms.CharField(max_length=100, label='Your Name')
+    email = forms.EmailField(label='Your Email')
+    message = forms.CharField(widget=forms.Textarea(attrs={'rows': 5}), label='Describe Your Issue')

@@ -21,7 +21,8 @@
   <p><strong>Experience:</strong> {{ job.experience_level }}</p>
   <p><strong>Description:</strong><br> {{ job.description }}</p>
 
-  <a href="{% url 'send_resumes' job.id %}" class="btn btn-primary mt-4">📧 Send Resumes</a>
+  <a href="{% url 'send_resumes' job.id %}" class="btn btn-primary mt-4">Attach Resumes</a>
+
   <a href="{% url 'hr_job_board' %}" class="btn btn-secondary mt-4">Back to Jobs</a>
 </div>
 </body>

@@ -48,6 +48,22 @@ urlpatterns = [
     path('hr/jobs/', views.hr_job_board, name='hr_job_board'),
     path('hr/job/<int:job_id>/', views.hr_job_detail, name='job_detail_hr'),
     path('hr/job/<int:job_id>/send-resumes/', views.send_resumes_view, name='send_resumes'),
+    path('company/resumes/', views.view_submitted_resumes, name='view_submitted_resumes'),
+    path('reject_submission/<int:submission_id>/', views.reject_submission, name='reject_submission'),
+    path('candidate/edit-profile/', views.edit_candidate_profile, name='edit_candidate_profile'),
+    path('candidate/view-profile/', views.view_candidate_profile, name='view_candidate_profile'),
+    path('candidate/contact-support/', views.contact_support_candidate, name='contact_support_candidate'),
+    path('candidate/jobs-applied/', views.jobs_applied_view, name='jobs_applied'),
+    path('company/view-profile/', views.view_company_user_profile, name='view_company_user_profile'),
+    path('company/edit-profile/', views.edit_company_user_profile, name='edit_company_user_profile'),
+    path('company/contact-support/', views.contact_support_company, name='contact_support_company'),
+
+
+
+
+
+
+
 
 
 

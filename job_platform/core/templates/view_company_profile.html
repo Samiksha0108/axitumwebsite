@@ -1,0 +1,88 @@
+{% extends 'base_company.html' %}
+{% load static %}
+
+{% block title %}Company User Profile{% endblock %}
+
+{% block content %}
+<style>
+  .profile-container {
+    max-width: 700px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .profile-item {
+    margin-bottom: 15px;
+  }
+  .profile-item label {
+    font-weight: bold;
+    display: block;
+    color: #555;
+  }
+  .profile-item span {
+    color: #333;
+  }
+</style>
+
+<div class="container">
+  <div class="profile-container">
+    <h4 class="text-center mb-4">👤 Company User Profile</h4>
+
+    <div class="profile-item">
+      <label>Email:</label>
+      <span>{{ user.email }}</span>
+    </div>
+
+    <div class="profile-item">
+      <label>Role:</label>
+      <span>{{ user.get_role_display }}</span>
+    </div>
+
+    <div class="profile-item">
+      <label>Phone:</label>
+      <span>{{ user.phone|default:"Not provided" }}</span>
+    </div>
+
+    <div class="profile-item">
+      <label>LinkedIn:</label>
+      {% if user.linkedin %}
+        <a href="{{ user.linkedin }}" target="_blank">{{ user.linkedin }}</a>
+      {% else %}
+        <span class="text-muted">Not provided</span>
+      {% endif %}
+    </div>
+
+    <div class="profile-item">
+      <label>Address:</label>
+      <span>{{ user.address|default:"Not provided" }}</span>
+    </div>
+
+    <div class="profile-item">
+      <label>SSN:</label>
+      {% if user.ssn %}
+        <span>••••-••-{{ user.ssn|slice:"-4:" }}</span>
+      {% else %}
+        <span class="text-muted">Not provided</span>
+      {% endif %}
+    </div>
+
+    <div class="profile-item">
+      <label>Government ID:</label>
+      <span>{{ user.govt_id|default:"Not provided" }}</span>
+    </div>
+
+    <div class="profile-item">
+      <label>Resume:</label>
+      {% if user.resume %}
+        <a href="{{ user.resume.url }}" target="_blank" class="btn btn-sm btn-outline-primary">📄 View Resume</a>
+      {% else %}
+        <span class="text-muted">Not provided</span>
+      {% endif %}
+    </div>
+
+   
+  </div>
+</div>
+{% endblock %}
